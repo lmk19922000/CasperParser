@@ -8,6 +8,6 @@ import lombok.AllArgsConstructor;
 public class Process {
 	public String name;
 	List<String> parameters;
-	List<String> knownPKs;
-	List<SecretKey> knownSKs;
+	List<String> knownPKFunctions;
+	List<EncryptionKey> knownSKs;
 }

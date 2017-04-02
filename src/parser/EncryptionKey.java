@@ -3,7 +3,7 @@ package parser;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class SecretKey {
+public class EncryptionKey {
 	String keyId;
 	String agentName;
 }

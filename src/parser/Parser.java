@@ -4,15 +4,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import service.ParseActualVariablesService;
 import service.ParseFreeVariablesService;
 import service.ParseProcessesService;
+import service.ParseProtocolDescriptionService;
 
 public class Parser {
 	static FreeVariables freeVariables;
-	static Processes processes;
+	static List<Process> processes;
+	static Map<Integer, ProtocolStep> protocolDescription;
+	static ActualVariables actualVariables;
 
 	public static void main(String[] args) {
 		List<String> inputLines = null;
@@ -53,6 +58,10 @@ public class Parser {
 
 		freeVariables = ParseFreeVariablesService.parse(inputLines, indexFreeVariablesLine + 1, indexProcessesLine);
 		processes = ParseProcessesService.parse(inputLines, indexProcessesLine + 1, indexProtocolDescriptionLine);
+		protocolDescription = ParseProtocolDescriptionService.parse(inputLines, indexProtocolDescriptionLine + 1,
+				indexSpecificationLine);
+		actualVariables = ParseActualVariablesService.parse(inputLines, indexActualVariablesLine + 1,
+				indexFunctionsLine);
 	}
 
 }

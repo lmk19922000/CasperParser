@@ -5,15 +5,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import parser.EncryptionKey;
 import parser.Process;
-import parser.Processes;
-import parser.SecretKey;
 
 public class ParseProcessesService {
-	static Processes processes;
 
-	public static Processes parse(List<String> inputLines, int start, int end) {
-		processes = new Processes();
+	public static List<Process> parse(List<String> inputLines, int start, int end) {
+		List<Process> processes = new ArrayList<Process>();
 
 		for (int i = start; i < end; i++) {
 			String line = inputLines.get(i).trim();
@@ -23,8 +21,8 @@ public class ParseProcessesService {
 			} else if (line.contains("knows")) {
 				String name = "";
 				List<String> parameters = new ArrayList<String>();
-				List<String> knownPKs = new ArrayList<String>();
-				List<SecretKey> knownSKs = new ArrayList<SecretKey>();
+				List<String> knownPKFunctions = new ArrayList<String>();
+				List<EncryptionKey> knownSKs = new ArrayList<EncryptionKey>();
 
 				Pattern mainPattern = Pattern.compile(
 						"^(?<name>[a-zA-Z0-9]+)\\((?<firstParam>[a-zA-Z0-9]+)(,[a-zA-Z0-9]+)*\\)\\s*knows\\s*(?<firstKey>[a-zA-Z0-9\\(\\)]+)(,\\s*[a-zA-Z0-9\\(\\)]+)*$");
@@ -39,11 +37,11 @@ public class ParseProcessesService {
 					parameters.add(firstParam.trim());
 					String firstKey = matcher.group("firstKey");
 					if (!firstKey.contains("(")) {
-						knownPKs.add(firstKey.trim());
+						knownPKFunctions.add(firstKey.trim());
 					} else {
 						String keyId = firstKey.substring(0, firstKey.indexOf("(")).trim();
 						String agentName = firstKey.substring(firstKey.indexOf("(") + 1, firstKey.indexOf(")")).trim();
-						knownSKs.add(new SecretKey(keyId, agentName));
+						knownSKs.add(new EncryptionKey(keyId, agentName));
 					}
 				} else {
 					System.out.println("String not follow format");
@@ -65,11 +63,11 @@ public class ParseProcessesService {
 				while (matcher.find(startIndex)) {
 					String key = matcher.group("remainingKey");
 					if (!key.contains("(")) {
-						knownPKs.add(key.trim());
+						knownPKFunctions.add(key.trim());
 					} else {
 						String keyId = key.substring(0, key.indexOf("(")).trim();
 						String agentName = key.substring(key.indexOf("(") + 1, key.indexOf(")")).trim();
-						knownSKs.add(new SecretKey(keyId, agentName));
+						knownSKs.add(new EncryptionKey(keyId, agentName));
 					}
 					startIndex = matcher.end();
 				}
@@ -84,7 +82,7 @@ public class ParseProcessesService {
 				// valuesSecond.get(i));
 				// }
 
-				processes.processes.add(new Process(name, parameters, knownPKs, knownSKs));
+				processes.add(new Process(name, parameters, knownPKFunctions, knownSKs));
 			} else {
 				System.out.println("ERROR: Line does not follow format:");
 				System.out.println(line);
