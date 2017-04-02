@@ -5,151 +5,92 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import parser.FreeVariables;
-import parser.InverseKey;
+import parser.Process;
+import parser.Processes;
+import parser.SecretKey;
 
 public class ParseProcessesService {
-	static FreeVariables freeVariables;
+	static Processes processes;
 
-	public static FreeVariables parse(List<String> inputLines, int start, int end) {
-		freeVariables = new FreeVariables();
+	public static Processes parse(List<String> inputLines, int start, int end) {
+		processes = new Processes();
 
 		for (int i = start; i < end; i++) {
 			String line = inputLines.get(i).trim();
-			if (line.endsWith("Agent") || line.endsWith("Nonce")) {
-				parseFreeVariablesLineAgentAndNoce(line);
-			} else if (line.contains("->")) {
-				parseFreeVariablesLinePKSK(line);
-			} else if (line.contains("InverseKeys")) {
-				parseFreeVariablesLineInverseKey(line);
-			} else if (line.equals("")) {
+
+			if (line.equals("")) {
 				continue;
+			} else if (line.contains("knows")) {
+				String name = "";
+				List<String> parameters = new ArrayList<String>();
+				List<String> knownPKs = new ArrayList<String>();
+				List<SecretKey> knownSKs = new ArrayList<SecretKey>();
+
+				Pattern mainPattern = Pattern.compile(
+						"^(?<name>[a-zA-Z0-9]+)\\((?<firstParam>[a-zA-Z0-9]+)(,[a-zA-Z0-9]+)*\\)\\s*knows\\s*(?<firstKey>[a-zA-Z0-9\\(\\)]+)(,\\s*[a-zA-Z0-9\\(\\)]+)*$");
+				Pattern remainingParamsPattern = Pattern.compile(",(?<remainingParam>[a-zA-Z0-9]+)");
+				Pattern remainingKeysPattern = Pattern.compile(",(?<remainingKey>\\s+[a-zA-Z0-9\\(\\)]+)");
+
+				Matcher matcher = mainPattern.matcher(line);
+
+				if (matcher.find()) {
+					name = matcher.group("name");
+					String firstParam = matcher.group("firstParam");
+					parameters.add(firstParam.trim());
+					String firstKey = matcher.group("firstKey");
+					if (!firstKey.contains("(")) {
+						knownPKs.add(firstKey.trim());
+					} else {
+						String keyId = firstKey.substring(0, firstKey.indexOf("(")).trim();
+						String agentName = firstKey.substring(firstKey.indexOf("(") + 1, firstKey.indexOf(")")).trim();
+						knownSKs.add(new SecretKey(keyId, agentName));
+					}
+				} else {
+					System.out.println("String not follow format");
+					return null;
+				}
+
+				// find remaining params
+				int startIndex = 0;
+				matcher = remainingParamsPattern.matcher(line);
+				while (matcher.find(startIndex)) {
+					String param = matcher.group("remainingParam");
+					parameters.add(param.trim());
+					startIndex = matcher.end();
+				}
+
+				// find remaining keys
+				startIndex = 0;
+				matcher = remainingKeysPattern.matcher(line);
+				while (matcher.find(startIndex)) {
+					String key = matcher.group("remainingKey");
+					if (!key.contains("(")) {
+						knownPKs.add(key.trim());
+					} else {
+						String keyId = key.substring(0, key.indexOf("(")).trim();
+						String agentName = key.substring(key.indexOf("(") + 1, key.indexOf(")")).trim();
+						knownSKs.add(new SecretKey(keyId, agentName));
+					}
+					startIndex = matcher.end();
+				}
+
+				// for (int j = 0; j < valuesFirst.size(); j++) {
+				// freeVariables.agentPublicKeys.add(value);
+				// InverseKey key = new InverseKey(valuesFirst.get(i),
+				// valuesSecond.get(i));
+				// System.out.format("value InverseKey 1 = %s\n",
+				// valuesFirst.get(i));
+				// System.out.format("value InverseKey 2 = %s\n",
+				// valuesSecond.get(i));
+				// }
+
+				processes.processes.add(new Process(name, parameters, knownPKs, knownSKs));
 			} else {
 				System.out.println("ERROR: Line does not follow format:");
 				System.out.println(line);
 			}
 		}
 
-		return freeVariables;
-	}
-
-	private static void parseFreeVariablesLineInverseKey(String line) {
-		Pattern firstValuePattern = Pattern.compile(
-				"^InverseKeys\\s*=\\s*(?<first>\\((?<firstfirst>[a-zA-Z0-9]+),\\s*(?<firstsecond>[a-zA-Z0-9]+)\\))(,\\s*\\([a-zA-Z0-9]+,\\s*[a-zA-Z0-9]+\\))*\\s*$");
-		Pattern remainingValuesPattern = Pattern.compile(
-				",(?<remaining>\\s*\\((?<remainingfirst>[a-zA-Z0-9]+),\\s*(?<remainingsecond>[a-zA-Z0-9]+)\\))");
-
-		Matcher matcher = firstValuePattern.matcher(line);
-		List<String> valuesFirst = new ArrayList<>();
-		List<String> valuesSecond = new ArrayList<>();
-
-		if (matcher.find()) {
-			String firstValue = matcher.group("firstfirst");
-			valuesFirst.add(firstValue);
-			String secondValue = matcher.group("firstsecond");
-			valuesSecond.add(secondValue);
-		} else {
-			System.out.println("String not follow format");
-			return;
-		}
-		// find remaining value
-		int start = 0;
-		matcher = remainingValuesPattern.matcher(line);
-		while (matcher.find(start)) {
-			String firstValue = matcher.group("remainingfirst");
-			valuesFirst.add(firstValue);
-			String secondValue = matcher.group("remainingsecond");
-			valuesSecond.add(secondValue);
-
-			matcher.group("remaining");
-			start = matcher.end();
-		}
-
-		for (int i = 0; i < valuesFirst.size(); i++) {
-			// freeVariables.agentPublicKeys.add(value);
-			InverseKey key = new InverseKey(valuesFirst.get(i), valuesSecond.get(i));
-			freeVariables.inverseKeys.add(key);
-			System.out.format("value InverseKey 1 = %s\n", valuesFirst.get(i));
-			System.out.format("value InverseKey 2 = %s\n", valuesSecond.get(i));
-		}
-	}
-
-	private static void parseFreeVariablesLinePKSK(String line) {
-		Pattern firstValuePattern = Pattern.compile("^(?<first>[a-zA-Z0-9]+)(,\\s*[a-zA-Z0-9]+)*\\s*:\\s*(.*)$");
-		Pattern remainingValuesPattern = Pattern.compile(",(?<remaining>\\s*[a-zA-Z0-9]+)");
-
-		Matcher matcher = firstValuePattern.matcher(line);
-		List<String> values = new ArrayList<>();
-
-		if (matcher.find()) {
-			String firstValue = matcher.group("first");
-			values.add(firstValue);
-		} else {
-			System.out.println("String not follow format");
-			return;
-		}
-		// find remaining value
-		int start = 0;
-		matcher = remainingValuesPattern.matcher(line);
-		while (matcher.find(start)) {
-			String value = matcher.group("remaining");
-			values.add(value.trim());
-			start = matcher.end();
-		}
-
-		if (line.contains("PublicKey")) {
-			for (String value : values) {
-				freeVariables.agentPublicKeys.add(value);
-				System.out.format("value PK = %s\n", value);
-			}
-		} else if (line.contains("SecretKey")) {
-			for (String value : values) {
-				freeVariables.agentSecretKeys.add(value);
-				System.out.format("value SK = %s\n", value);
-			}
-		}
-	}
-
-	private static void parseFreeVariablesLineAgentAndNoce(String line) {
-		Pattern firstValuePattern = Pattern
-				.compile("^(?<first>[a-zA-Z0-9]+)(,\\s*[a-zA-Z0-9]+)*\\s*:\\s*(?<className>[a-zA-Z0-9]+)$");
-		Pattern remainingValuesPattern = Pattern.compile(",(?<remaining>\\s*[a-zA-Z0-9]+)");
-
-		// System.out.println("==================");
-		// System.out.println("Parsing string: " + line);
-		Matcher matcher = firstValuePattern.matcher(line);
-		List<String> values = new ArrayList<>();
-		String className;
-
-		if (matcher.find()) {
-			String firstValue = matcher.group("first");
-			className = matcher.group("className");
-			values.add(firstValue);
-		} else {
-			System.out.println("String not follow format");
-			return;
-		}
-		// find remaining value
-		int start = 0;
-		matcher = remainingValuesPattern.matcher(line);
-		while (matcher.find(start)) {
-			String value = matcher.group("remaining");
-			values.add(value.trim());
-			start = matcher.end();
-		}
-
-		// System.out.println("Detecting declaration for class " + className);
-		if (className.equals("Agent")) {
-			for (String value : values) {
-				freeVariables.agents.add(value);
-				System.out.format("value Agent = %s\n", value);
-			}
-		} else if (className.equals("Nonce")) {
-			for (String value : values) {
-				freeVariables.nonces.add(value);
-				System.out.format("value Nonce = %s\n", value);
-			}
-		}
-
+		return processes;
 	}
 }

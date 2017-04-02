@@ -8,9 +8,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import service.ParseFreeVariablesService;
+import service.ParseProcessesService;
 
 public class Parser {
 	static FreeVariables freeVariables;
+	static Processes processes;
 
 	public static void main(String[] args) {
 		List<String> inputLines = null;
@@ -50,12 +52,7 @@ public class Parser {
 		}
 
 		freeVariables = ParseFreeVariablesService.parse(inputLines, indexFreeVariablesLine + 1, indexProcessesLine);
-		parseProcesses(inputLines, indexProcessesLine + 1, indexProtocolDescriptionLine);
-	}
-
-	private static void parseProcesses(List<String> inputLines, int i, int indexProtocolDescriptionLine) {
-		// TODO Auto-generated method stub
-
+		processes = ParseProcessesService.parse(inputLines, indexProcessesLine + 1, indexProtocolDescriptionLine);
 	}
 
 }

@@ -17,7 +17,7 @@ public class ParseFreeVariablesService {
 		for (int i = start; i < end; i++) {
 			String line = inputLines.get(i).trim();
 			if (line.endsWith("Agent") || line.endsWith("Nonce")) {
-				parseFreeVariablesLineAgentAndNoce(line);
+				parseFreeVariablesLineAgentAndNonce(line);
 			} else if (line.contains("->")) {
 				parseFreeVariablesLinePKSK(line);
 			} else if (line.contains("InverseKeys")) {
@@ -110,7 +110,7 @@ public class ParseFreeVariablesService {
 		}
 	}
 
-	private static void parseFreeVariablesLineAgentAndNoce(String line) {
+	private static void parseFreeVariablesLineAgentAndNonce(String line) {
 		Pattern firstValuePattern = Pattern
 				.compile("^(?<first>[a-zA-Z0-9]+)(,\\s*[a-zA-Z0-9]+)*\\s*:\\s*(?<className>[a-zA-Z0-9]+)$");
 		Pattern remainingValuesPattern = Pattern.compile(",(?<remaining>\\s*[a-zA-Z0-9]+)");
