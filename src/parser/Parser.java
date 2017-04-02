@@ -10,19 +10,27 @@ import java.util.stream.Stream;
 
 import service.ParseActualVariablesService;
 import service.ParseFreeVariablesService;
+import service.ParseFunctionsService;
+import service.ParseIntruderInformationService;
 import service.ParseProcessesService;
 import service.ParseProtocolDescriptionService;
+import service.ParseSpecificationService;
+import service.ParseSystemService;
 
 public class Parser {
-	static FreeVariables freeVariables;
-	static List<Process> processes;
-	static Map<Integer, ProtocolStep> protocolDescription;
-	static ActualVariables actualVariables;
+	public static FreeVariables freeVariables;
+	public static List<Process> processes;
+	public static Map<Integer, ProtocolStep> protocolDescription;
+	public static List<Specification> specification;
+	public static ActualVariables actualVariables;
+	public static List<Function> functions;
+	public static List<SystemEntity> system;
+	public static IntruderInformation intruderInformation;
 
-	public static void main(String[] args) {
+	public static void parseInputFile(String inputFilePath) {
 		List<String> inputLines = null;
 
-		try (Stream<String> stream = Files.lines(Paths.get("C:\\Users\\MinhKhue\\Downloads\\input.txt"))) {
+		try (Stream<String> stream = Files.lines(Paths.get(inputFilePath))) {
 			inputLines = stream.collect(Collectors.toList());
 		} catch (IOException e) {
 			System.out.println("ERROR: Cannot read input file");
@@ -60,8 +68,14 @@ public class Parser {
 		processes = ParseProcessesService.parse(inputLines, indexProcessesLine + 1, indexProtocolDescriptionLine);
 		protocolDescription = ParseProtocolDescriptionService.parse(inputLines, indexProtocolDescriptionLine + 1,
 				indexSpecificationLine);
+		specification = ParseSpecificationService.parse(inputLines, indexSpecificationLine + 1,
+				indexActualVariablesLine);
 		actualVariables = ParseActualVariablesService.parse(inputLines, indexActualVariablesLine + 1,
 				indexFunctionsLine);
+		functions = ParseFunctionsService.parse(inputLines, indexFunctionsLine + 1, indexSystemLine);
+		system = ParseSystemService.parse(inputLines, indexSystemLine + 1, indexIntruderInformationLine);
+		intruderInformation = ParseIntruderInformationService.parse(inputLines, indexIntruderInformationLine + 1,
+				inputLines.size());
 	}
 
 }

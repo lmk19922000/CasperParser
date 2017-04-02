@@ -18,10 +18,10 @@ public class ParseProtocolDescriptionService {
 
 		for (int i = start; i < end; i++) {
 			String line = inputLines.get(i).trim();
-			if (!line.contains("{")) {
-				parseLine0(line);
-			} else if (line.equals("")) {
+			if (line.equals("")) {
 				continue;
+			} else if (!line.contains("{")) {
+				parseLine0(line);
 			} else {
 				parseLine(line);
 			}
