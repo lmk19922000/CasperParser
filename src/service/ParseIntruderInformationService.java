@@ -6,7 +6,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import src.parser.EncryptionKey;
+import src.parser.FunctionEntity;
 import src.parser.IntruderInformation;
+import src.parser.Parser;
 
 public class ParseIntruderInformationService {
 	static IntruderInformation intruderInfo = new IntruderInformation();
@@ -20,7 +22,7 @@ public class ParseIntruderInformationService {
 			} else if (line.contains("IntruderKnowledge")) {
 				parseLine(line);
 			} else {
-				intruderInfo.intruderName = line.substring(line.indexOf("=")).trim();
+				intruderInfo.intruderName = line.substring(line.indexOf("=")+2).trim();
 			}
 		}
 
@@ -62,7 +64,39 @@ public class ParseIntruderInformationService {
 			start = matcher.end();
 		}
 
-		intruderInfo.intruderKnowledge = intruderKnowledge;
-		intruderInfo.intruderKeysKnowledge = intruderKeysKnowledge;
+		List<String> agents = new ArrayList<String>();
+		List<String> nonces = new ArrayList<String>();
+		List<String> pKs = new ArrayList<String>();
+		for(String str: intruderKnowledge){
+			boolean isKey = true;
+			for(String agent: Parser.actualVariables.agents){
+				if(agent.equals(str)){
+					agents.add(agent);
+					isKey = false;
+					break;
+				}
+			}
+			for(String nonce: Parser.actualVariables.nonces){
+				if(nonce.equals(str)){
+					nonces.add(nonce);
+					isKey = false;
+					break;
+				}
+			}
+			if(isKey){
+				for(FunctionEntity entity: Parser.functions){
+					for(String key: entity.params){
+						if(key.equals(str)){
+							pKs.add(str);
+							break;
+						}
+					}
+				}	
+			}
+		}
+		intruderInfo.intruderAgentsKnowledge = agents;
+		intruderInfo.intruderNoncesKnowledge = nonces;
+		intruderInfo.intruderPKsKnowledge = pKs;
+		intruderInfo.intruderSKsKnowledge = intruderKeysKnowledge;
 	}
 }
