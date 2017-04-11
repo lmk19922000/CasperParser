@@ -1,17 +1,17 @@
-package service;
+package src.service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import parser.EncryptionKey;
-import parser.Process;
+import src.parser.EncryptionKey;
+import src.parser.ProcessEntity;
 
 public class ParseProcessesService {
 
-	public static List<Process> parse(List<String> inputLines, int start, int end) {
-		List<Process> processes = new ArrayList<Process>();
+	public static List<ProcessEntity> parse(List<String> inputLines, int start, int end) {
+		List<ProcessEntity> processes = new ArrayList<ProcessEntity>();
 
 		for (int i = start; i < end; i++) {
 			String line = inputLines.get(i).trim();
@@ -82,7 +82,7 @@ public class ParseProcessesService {
 				// valuesSecond.get(i));
 				// }
 
-				processes.add(new Process(name, parameters, knownPKFunctions, knownSKs));
+				processes.add(new ProcessEntity(name, parameters, knownPKFunctions, knownSKs));
 			} else {
 				System.out.println("ERROR: Line does not follow format:");
 				System.out.println(line);

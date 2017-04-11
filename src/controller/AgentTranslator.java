@@ -1,4 +1,4 @@
-package controller;
+package src.controller;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,10 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import parser.Parser;
-import parser.Process;
-import parser.ProtocolStep;
-import parser.Specification;
+import src.parser.Parser;
+import src.parser.ProcessEntity;
+import src.parser.ProtocolStep;
+import src.parser.Specification;
 
 public class AgentTranslator {
 	public static List<String> enums;
@@ -68,7 +68,7 @@ public class AgentTranslator {
 		
         int i=0;
 		//for each process p in #Processes
-	   for(Process p:Parser.processes)
+	   for(ProcessEntity p:Parser.processes)
 	   {
 		String localprocess="P"+p.name.toLowerCase();
 		CSPprocess c= new CSPprocess();

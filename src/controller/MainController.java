@@ -1,6 +1,7 @@
-package controller;
+package src.controller;
 
-import parser.Parser;
+import src.parser.Parser;
+
 
 public class MainController {
 

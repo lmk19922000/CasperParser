@@ -1,17 +1,17 @@
-package service;
+package src.service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import parser.Function;
+import src.parser.FunctionEntity;
 
 public class ParseFunctionsService {
-	static List<Function> functions;
+	static List<FunctionEntity> functions;
 
-	public static List<Function> parse(List<String> inputLines, int start, int end) {
-		functions = new ArrayList<Function>();
+	public static List<FunctionEntity> parse(List<String> inputLines, int start, int end) {
+		functions = new ArrayList<FunctionEntity>();
 
 		for (int i = start; i < end; i++) {
 			String line = inputLines.get(i).trim();
@@ -51,6 +51,6 @@ public class ParseFunctionsService {
 			start = matcher.end();
 		}
 
-		functions.add(new Function(type, params));
+		functions.add(new FunctionEntity(type, params));
 	}
 }

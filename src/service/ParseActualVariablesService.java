@@ -1,11 +1,11 @@
-package service;
+package src.service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import parser.ActualVariables;
+import src.parser.ActualVariables;
 
 public class ParseActualVariablesService {
 
