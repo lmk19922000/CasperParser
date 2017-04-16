@@ -1,4 +1,4 @@
-package src.parser;
+package parser;
 
 import java.util.List;
 
@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class IntruderInformation {
 	public String intruderName;
-	public List<String> intruderAgentsKnowledge;
-	public List<String> intruderNoncesKnowledge;
-	public List<String> intruderPKsKnowledge;
-	public List<EncryptionKey> intruderSKsKnowledge;
+	public List<String> intruderKnowledge;
+	public List<EncryptionKey> intruderKeysKnowledge;
 }

@@ -1,9 +1,9 @@
-package src.parser;
+package parser;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class EncryptionKey {
-	String keyId;
-	String agentName;
+	public String keyId;
+	public String agentName;
 }

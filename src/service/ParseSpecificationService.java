@@ -1,11 +1,11 @@
-package src.service;
+package service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import src.parser.Specification;
+import parser.Specification;
 
 public class ParseSpecificationService {
 	static List<Specification> specs;
