@@ -1,12 +1,12 @@
-package src.service;
+package service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import src.parser.FreeVariables;
-import src.parser.InverseKey;
+import parser.FreeVariables;
+import parser.InverseKey;
 
 public class ParseFreeVariablesService {
 	static FreeVariables freeVariables;

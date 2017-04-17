@@ -1,4 +1,4 @@
-package src.parser;
+package parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,22 +8,22 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import src.service.ParseActualVariablesService;
-import src.service.ParseFreeVariablesService;
-import src.service.ParseFunctionsService;
-import src.service.ParseIntruderInformationService;
-import src.service.ParseProcessesService;
-import src.service.ParseProtocolDescriptionService;
-import src.service.ParseSpecificationService;
-import src.service.ParseSystemService;
+import service.ParseActualVariablesService;
+import service.ParseFreeVariablesService;
+import service.ParseFunctionsService;
+import service.ParseIntruderInformationService;
+import service.ParseProcessesService;
+import service.ParseProtocolDescriptionService;
+import service.ParseSpecificationService;
+import service.ParseSystemService;
 
 public class Parser {
 	public static FreeVariables freeVariables;
-	public static List<ProcessEntity> processes;
+	public static List<Process> processes;
 	public static Map<Integer, ProtocolStep> protocolDescription;
 	public static List<Specification> specification;
 	public static ActualVariables actualVariables;
-	public static List<FunctionEntity> functions;
+	public static List<Function> functions;
 	public static List<SystemEntity> system;
 	public static IntruderInformation intruderInformation;
 

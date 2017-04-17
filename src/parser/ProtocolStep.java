@@ -1,4 +1,4 @@
-package src.parser;
+package parser;
 
 import java.util.List;
 

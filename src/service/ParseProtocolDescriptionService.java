@@ -1,4 +1,4 @@
-package src.service;
+package service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import src.parser.EncryptionKey;
-import src.parser.ProtocolStep;
+import parser.EncryptionKey;
+import parser.ProtocolStep;
 
 public class ParseProtocolDescriptionService {
 	static Map<Integer, ProtocolStep> protocolSteps;

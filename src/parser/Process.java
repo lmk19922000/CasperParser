@@ -5,7 +5,9 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class SystemEntity {
+public class Process {
 	public String name;
-	public List<String> params;
+	public List<String> parameters;
+	List<String> knownPKFunctions;
+	List<EncryptionKey> knownSKs;
 }
