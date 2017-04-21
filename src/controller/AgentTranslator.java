@@ -1,37 +1,28 @@
-package src.controller;
+package controller;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import src.parser.Parser;
-import src.parser.ProcessEntity;
-import src.parser.ProtocolStep;
-import src.parser.Specification;
+import parser.Parser;
+import parser.Process;
+import parser.Specification;
+import translator.Channel;
+import translator.ChannelExtractor;
 
 public class AgentTranslator {
 	public static List<String> enums;
-	public static Map<Integer,String> channels= new HashMap<Integer,String>();
 	public static Map<String,CSPprocess> listPro = new HashMap<String, CSPprocess>();
 	public static Map<String,Boolean> specs = new HashMap<String,Boolean>();
 	public static List<String> protcol = new ArrayList<String>();	
 	
-	public static void main (String[] args) throws IOException
+	
+	public static void createAgentprocess () 
 	{
-		String inputFilePath = "C:\\Users\\kumar\\Downloads\\input.txt";
-		File fout = new File("NS3out.txt");
-		FileOutputStream fos = new FileOutputStream(fout);
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-
-
-		Parser.parseInputFile(inputFilePath);
 		
 		enums = new ArrayList<String>(Parser.actualVariables.agents);
 		enums.addAll(Parser.actualVariables.nonces);
@@ -45,30 +36,17 @@ public class AgentTranslator {
 		varDeclared= varDeclared+"}";
 		
 		System.out.println(varDeclared);
-		bw.write(varDeclared);
-	 	bw.newLine();
+
+	 	
 		
-       // for each type of message #prototocolDescription create a chennel
-		for (Map.Entry<Integer, ProtocolStep> entry : Parser.protocolDescription.entrySet()) 
-			{
-		   	if (entry.getValue().messageContent != null)
-				{
-				   int msgCount= entry.getValue().messageContent.size();
-				     if (!channels.containsKey(msgCount))
-				    	channels.put(msgCount,"c"+(char)(96+msgCount));
-				}
-				
-			} 
-		
-		for (Integer key : channels.keySet()){ 
-		  System.out.println("Channel\t"+channels.get(key)+" 0");
-		  bw.write("Channel\t"+channels.get(key)+" 0");
-		 	bw.newLine();}
+    	for (Channel ch: ChannelExtractor.channelList) 
+		  System.out.println("Channel\t"+ch.channelName);
+		  
 
 		
         int i=0;
 		//for each process p in #Processes
-	   for(ProcessEntity p:Parser.processes)
+	   for(Process p:Parser.processes)
 	   {
 		String localprocess="P"+p.name.toLowerCase();
 		CSPprocess c= new CSPprocess();
@@ -77,8 +55,8 @@ public class AgentTranslator {
 		c.actualAgent=Parser.actualVariables.agents.get(i) ;
 		c.naunce = Parser.actualVariables.nonces.get(i) ;
 		c.listener=null;
-		c.IsRunning = false;
-		c.Iscommit = false;
+		c.isRunning = false;
+		c.isCommit = false;
  
 		c.parameters= new ArrayList<String>();
 		c.parameters.add("( ");
@@ -102,10 +80,20 @@ public class AgentTranslator {
 		i++;
 		 
 	   }
+	   //Emit variabls
+		for (String key : listPro.keySet())
+		{
+					CSPprocess p1= listPro.get(key);
+					System.out.println("var "+p1.processName+"isRunning =  "+p1.isRunning);
+					System.out.println("var "+p1.processName+"isCommit =  "+p1.isCommit);
+
+		}
+		
+		
+	   String Senderactual="",recieveractual="";
 	 		 for (int k2: Parser.protocolDescription.keySet())
 			  {
-				  if (k2==0)
-					  continue;
+					  
 				  
 			  				  
 		         String sAgent=Parser.protocolDescription.get(k2).senderAgent,
@@ -113,31 +101,50 @@ public class AgentTranslator {
 				  
                  CSPprocess s= listPro.get(sAgent);
                  CSPprocess r= listPro.get(rAgent);
-                 		         
                  String _sPrecond="",_rPrecond="";
- 				String _spostcond="";
-                if (k2==1)
-				   {
-					  s.IsRunning=true;
-					  r.IsRunning = true;
-					  _sPrecond= s.processName+"IsRunning { if ( sender == "+s.actualAgent+" AND receiver == "+r.actualAgent+" ) { "+ s.processName+"IsRunning = "+s.IsRunning+"} }  -> ";
-                      _rPrecond= "->"+r.processName+"IsRunning { if ( sender == "+s.actualAgent+" AND receiver == "+r.actualAgent+" ) { "+ r.processName+"IsRunning = "+s.IsRunning+"} }  ";				
+  				String _spostcond="";String channelname="";
+
+  				
+				  if (k2==0){
+					  Senderactual = s.actualAgent;
+					  recieveractual= r.actualAgent;
+					
+					  continue;
 				  }
 
-				else if(r.Iscommit == false && r.listener != null){
-                	r.Iscommit = true;
-					_spostcond = " - > "+r.processName+"Iscommit { if ( sender == "+r.actualAgent+" AND receiver == "+s.actualAgent+" ) { "+ r.processName+"Iscommit = "+r.Iscommit+"} } ";;
+                 		         
+                 for (Channel c: ChannelExtractor.channelList)
+         		{
+                	 if (c.messageContentLen==Parser.protocolDescription.get(k2).messageContent.size())
+                	 {    channelname = c.channelName;
+                	 break;
+                	 }
+                	 
+         		}
+                 
+                
+                if (k2==1)
+				   {
+					  s.isRunning=true;
+					  r.isRunning = true;
+					  _sPrecond= s.processName+"isRunning { if ( sender == "+Senderactual+" AND receiver == "+recieveractual+" ) { "+ s.processName+"isRunning = "+s.isRunning+"} }  -> ";
+                      _rPrecond= "->"+r.processName+"isRunning { if ( sender == "+Senderactual+" AND receiver == "+recieveractual+" ) { "+ r.processName+"isRunning = "+s.isRunning+"} }  ";				
+				  }
+
+				else if(r.isCommit == false && r.listener != null){
+                	r.isCommit = true;
+					_spostcond = " - > "+r.processName+"isCommit { if ( sender == "+Senderactual+" AND receiver == "+recieveractual+" ) { "+ r.processName+"isCommit = "+r.isCommit+"} } ";;
                 	 }
                 	
                 	
-				  String _tos= s.parameters.get(1)+"."+Arrays.toString(Parser.protocolDescription.get(k2).messageContent.toArray()).replace('[', ' ').replace(']', ' ').replace(',', '.').trim()+"."+"reciever";
-					    _tos=_sPrecond+  channels.get(Parser.protocolDescription.get(k2).messageContent.size())+"!"+_tos;
+				  String _tos= s.parameters.get(1)+"."+Arrays.toString(Parser.protocolDescription.get(k2).messageContent.toArray()).replace('[', ' ').replace(']', ' ').replace(',', '.').trim()+".reciever";
+					    _tos=_sPrecond+  channelname+"!"+_tos;
 				
 				
 				
 			
 			      String _tor = r.parameters.get(1)+"."+Arrays.toString(Parser.protocolDescription.get(k2).messageContent.toArray()).replace('[', ' ').replace(']', ' ').replace(',', '.').trim()+".receiver";
-					    _tor= channels.get(Parser.protocolDescription.get(k2).messageContent.size())+"?"+_tor+"  "+_rPrecond+_spostcond;
+					    _tor= channelname+"?"+_tor+"  "+_rPrecond+_spostcond;
 					
 				  
 				   s.description.add(_tos);
@@ -155,24 +162,19 @@ public class AgentTranslator {
 		{
 					CSPprocess p1= listPro.get(key);
 					System.out.println(p1.processName);
-					bw.write(p1.processName);
-				 	bw.newLine();
+					
 					
 					System.out.println(p1.parameters.toString().replace('[', ' ').replace(']', ' ').trim().replace("( ,", "(").replace(", )", ")"));
-					bw.write(p1.parameters.toString().replace('[', ' ').replace(']', ' ').trim().replace("( ,", "(").replace(", )", ")"));
-				 	bw.newLine();
+				 	
 					
 					//System.out.println(p1.listener);
 					for (String st:p1.description){
-					 if (st == p1.description.get(p1.description.size()- 1)){
+					 if (st == p1.description.get(p1.description.size()- 1))
 						System.out.println(st+" - > skip ;");
-						bw.write(st+" - > skip ;");}
+						
 					 	
-					 else{
+					 else
 					 System.out.println(st+" - >");
-					 bw.write(st+" - >");}
-					 
-					 bw.newLine();
 						
 					}
 					
@@ -181,25 +183,56 @@ public class AgentTranslator {
 
        }//end of protocol description
 
+	
+        
+        System.out.println("//CSP Processes created !");
+	
+	}
+
+	
+	public static void declaretheSystemSpecs()
+	{
+    
+		//Protocol = ( PIni(A, I, Na) [] PIni(A, B, Na) ) ||| PRes(B, Nb) ||| PI;
+		String p= "";
+
+		 for(String k:listPro.keySet())
+		   {
+			CSPprocess c= listPro.get(k);
+	
+				if (p.length()==0 && c.processName.toUpperCase().contains("INITIATOR"))
+				{
+					p= c.processName+"("+c.actualAgent+","+translator.IntruderProcess.name+","+c.naunce +" )"+" [] ";
+					p= p+c.processName+"("+c.actualAgent+","+translator.IntruderProcess.name+","+c.naunce +" )"+" []";
+				
+					p= "( "+p+"  )";
+				}
+				else if (p.length()>0 && c.processName.toUpperCase().contains("RESPONDER"))
+				{
+					p= p+" ||| "+c.processName+"("+c.actualAgent+","+c.naunce +" )";
+				}
+
+		   }
+		    p= p+" ||| "+translator.IntruderProcess.name;
+		
+		    
+		System.out.println("Protocol = "+p);
+		
 		System.out.println("//specification");
 		//Specification
 		for (String cp: listPro.keySet())
 		{	
 			CSPprocess csp= listPro.get(cp);
-			System.out.println("#define "+csp.processName.toLowerCase()+"IsRunning"+"  ( "+csp.processName+"IsRunning == "+csp.IsRunning +") ;");
-			bw.write("#define "+csp.processName.toLowerCase()+"IsRunning"+"  ( "+csp.processName+"IsRunning == "+csp.IsRunning +") ;");
-            bw.newLine();
-			specs.put(csp.processName+"IsRunning ",csp.IsRunning);
+			System.out.println("#define "+csp.processName.toLowerCase()+"isRunning"+"  ( "+csp.processName+"isRunning == "+csp.isRunning +") ;");
+            specs.put(csp.processName+"isRunning ",csp.isRunning);
 
-			System.out.println("#define "+csp.processName.toLowerCase()+"Iscommit"+"  ( "+csp.processName+"Iscommit == "+csp.Iscommit +") ;");
-			bw.write("#define "+csp.processName.toLowerCase()+"Iscommit"+"  ( "+csp.processName+"Iscommit == "+csp.Iscommit +") ;");
-            bw.newLine();
-			specs.put(csp.processName+"Iscommit ",csp.Iscommit);
+			System.out.println("#define "+csp.processName.toLowerCase()+"isCommit"+"  ( "+csp.processName+"isCommit == "+csp.isCommit +") ;");
+          
+			specs.put(csp.processName+"isCommit ",csp.isCommit);
 		}
 		
 		System.out.println("//protocol");
-		bw.write("//protocol");
-		bw.newLine();
+
 		//Authentication of B to A can thus be expressed saying that ResRunningAB must become true before IniCommitAB.
 		//i.e., the initiator A commits to a session with B only if B has indeed taken part in a run of the protocol with A.
 		//System.out.println("#assert Protocol |= [] ( ([] !iniCommitAB) || (!iniCommitAB U resRunningAB) ");
@@ -215,29 +248,21 @@ public class AgentTranslator {
 				//System.out.println("Authen");
 				CSPprocess csp1= listPro.get(s.identifier);
 				CSPprocess csp2= listPro.get(s.atom);
-				System.out.println("#assert Protocol |= [] (  ([] !"+csp1.processName.toLowerCase()+"Iscommit )"+"||"+"( !"+csp1.processName.toLowerCase()+"Iscommit )"+"U ("+csp2.processName.toLowerCase()+"IsRunning )) ;");
-				bw.write("#assert Protocol |= [] (  ([] !"+csp1.processName.toLowerCase()+"Iscommit )"+"||"+"( !"+csp1.processName.toLowerCase()+"Iscommit )"+"U ("+csp2.processName.toLowerCase()+"IsRunning )) ;");
+				System.out.println("#assert Protocol |= [] (  ([] !"+csp1.processName.toLowerCase()+"isCommit )"+"||"+"( !"+csp1.processName.toLowerCase()+"isCommit )"+"U ("+csp2.processName.toLowerCase()+"isRunning )) ;");
 								
-		        protcol.add("#assert Protocol |= [] (  ([] !"+csp1.processName.toLowerCase()+"Iscommit )"+"||"+"( !"+csp1.processName.toLowerCase()+"Iscommit )"+"U ("+csp2.processName.toLowerCase()+"IsRunning )) ;");	 
+		        protcol.add("#assert Protocol |= [] (  ([] !"+csp1.processName.toLowerCase()+"isCommit )"+"||"+"( !"+csp1.processName.toLowerCase()+"isCommit )"+"U ("+csp2.processName.toLowerCase()+"isRunning )) ;");	 
                
-			   bw.newLine();
+
 			  }
 		}
 
 
 		System.out.println("#assert Protocol deadlockfree;");
-		bw.write("#assert Protocol deadlockfree;");
-		bw.newLine();
+
         protcol.add("#assert Protocol deadlockfree;");
 
-        
-        System.out.println("CSP Processes created !");
-		bw.close();
-	
-	
+    
 	}
-
-	
 	
 	
 }

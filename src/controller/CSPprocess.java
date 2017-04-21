@@ -1,4 +1,4 @@
-package src.controller;
+package controller;
 import java.util.List;
 
 
@@ -13,8 +13,8 @@ public class CSPprocess {
 	public String naunce;
 	public String listener;
 	public List<String> parameters;
-	public boolean IsRunning;
-	public boolean Iscommit;
+	public boolean isRunning;
+	public boolean isCommit;
 	public List<String> description;
 
 }
